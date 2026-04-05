@@ -1,0 +1,12 @@
+# OS
+.DS_Store
+
+# Node
+node_modules/
+
+# Memory (contains project-specific knowledge — keep in repo for persistence)
+# Uncomment to exclude: memory/*/
+
+# Secrets
+.env
+.env.local

@@ -1,0 +1,72 @@
+# Claude Crew Configuration
+# このファイルでエージェント構成をカスタマイズ
+
+crew:
+  name: "default"
+  description: "標準的な開発チーム構成"
+
+agents:
+  architect:
+    definition: agents/architect.md
+    memory: memory/architect/
+    model: opus  # 設計判断は高品質モデル
+    description: "設計・技術選定の専門家"
+
+  coder:
+    definition: agents/coder.md
+    memory: memory/coder/
+    model: sonnet  # 実装はコスパ重視
+    description: "実装・コーディングの専門家"
+
+  reviewer:
+    definition: agents/reviewer.md
+    memory: memory/reviewer/
+    model: opus  # レビューは品質重視
+    description: "コード品質・セキュリティの専門家"
+
+  researcher:
+    definition: agents/researcher.md
+    memory: memory/researcher/
+    model: sonnet  # 調査は速度重視
+    description: "技術調査・分析の専門家"
+
+# Workflow templates
+workflows:
+  feature:
+    description: "新機能追加"
+    steps:
+      - agent: architect
+        action: "設計判断"
+      - agent: coder
+        action: "実装"
+      - agent: reviewer
+        action: "レビュー"
+      - agent: coder
+        action: "修正（必要な場合）"
+        condition: "review_result == REQUEST_CHANGES"
+
+  bugfix:
+    description: "バグ修正"
+    steps:
+      - agent: researcher
+        action: "原因調査"
+      - agent: coder
+        action: "修正実装"
+      - agent: reviewer
+        action: "修正レビュー"
+
+  research:
+    description: "技術調査"
+    steps:
+      - agent: researcher
+        action: "調査・分析"
+
+  refactor:
+    description: "リファクタリング"
+    steps:
+      - agent: architect
+        action: "リファクタ方針策定"
+      - agent: coder
+        action: "リファクタ実施"
+      - agent: reviewer
+        action: "レビュー"
