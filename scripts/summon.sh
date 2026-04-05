@@ -25,9 +25,37 @@ YELLOW='\033[1;33m'
 BLUE='\033[1;34m'
 MAGENTA='\033[1;35m'
 CYAN='\033[1;36m'
+WHITE='\033[1;37m'
 BOLD='\033[1m'
 DIM='\033[2m'
 RESET='\033[0m'
+
+# スリープ付きecho（演出用）
+slow_echo() {
+  echo -e "$1"
+  sleep 0.15
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ギルドのアスキーアート
+# ═══════════════════════════════════════════════════════════════════════════════
+
+show_guild_gate() {
+  echo ""
+  echo -e "${YELLOW}        ╔═══════════════════════════════════════╗${RESET}"
+  echo -e "${YELLOW}        ║${RESET}    ${DIM}___${RESET}                ${DIM}___${RESET}              ${YELLOW}║${RESET}"
+  echo -e "${YELLOW}        ║${RESET}   ${DIM}|   |${RESET}  ${BOLD}${WHITE}CLAUDE  CREW${RESET}  ${DIM}|   |${RESET}             ${YELLOW}║${RESET}"
+  echo -e "${YELLOW}        ║${RESET}   ${DIM}| 🏰|${RESET}              ${DIM}| 🏰|${RESET}             ${YELLOW}║${RESET}"
+  echo -e "${YELLOW}        ║${RESET}   ${DIM}|   |${RESET}  ${CYAN}冒険者ギルド${RESET}  ${DIM}|   |${RESET}             ${YELLOW}║${RESET}"
+  echo -e "${YELLOW}        ║${RESET}   ${DIM}|   |${RESET}              ${DIM}|   |${RESET}             ${YELLOW}║${RESET}"
+  echo -e "${YELLOW}        ║${RESET}${DIM}═══╧═══╧══════════════════╧═══╧═══${RESET}       ${YELLOW}║${RESET}"
+  echo -e "${YELLOW}        ╚═══════════════════════════════════════╝${RESET}"
+  echo ""
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ギルドマスターの挨拶と冒険者の掛け合い
+# ═══════════════════════════════════════════════════════════════════════════════
 
 # ギルドマスターの挨拶（ランダム）
 GREETINGS=(
@@ -41,13 +69,50 @@ GREETINGS=(
   "冒険者たちよ、剣を研ぎ、盾を磨け。出陣の時だ。"
 )
 
-# ギルドメンバー紹介
-GUILD_MEMBERS=(
-  "🏗️  ${BOLD}Architect${RESET}  ${DIM}— 軍師。依頼の作戦を練る知恵者。${RESET}"
-  "⚔️  ${BOLD}Coder${RESET}      ${DIM}— 剣士。コードで敵を斬り伏せる主力。${RESET}"
-  "🛡️  ${BOLD}Reviewer${RESET}   ${DIM}— 守護者。品質の盾でバグを通さぬ番人。${RESET}"
-  "🔮 ${BOLD}Researcher${RESET} ${DIM}— 斥候。未知の領域を探り、道を示す魔導士。${RESET}"
-)
+# 冒険者の掛け合い（ランダムで1セット表示）
+show_banter() {
+  local BANTER_SET=$((RANDOM % 6))
+  echo -e "  ${DIM}── 冒険者たちの声が聞こえる... ──${RESET}"
+  echo ""
+  case $BANTER_SET in
+    0)
+      slow_echo "  ${CYAN}⚔️  Coder:${RESET}    ${DIM}「今日こそあのバグを仕留める...！」${RESET}"
+      slow_echo "  ${CYAN}🛡️  Reviewer:${RESET}  ${DIM}「落ち着け剣士。まずは私のレビューを通してからだ」${RESET}"
+      slow_echo "  ${CYAN}⚔️  Coder:${RESET}    ${DIM}「...はい」${RESET}"
+      ;;
+    1)
+      slow_echo "  ${CYAN}🏗️  Architect:${RESET} ${DIM}「この設計、完璧だと思わないか？」${RESET}"
+      slow_echo "  ${CYAN}🔮 Researcher:${RESET} ${DIM}「軍師殿、似た構成のOSSが3つ炎上してます」${RESET}"
+      slow_echo "  ${CYAN}🏗️  Architect:${RESET} ${DIM}「...設計を見直そう」${RESET}"
+      ;;
+    2)
+      slow_echo "  ${CYAN}🛡️  Reviewer:${RESET}  ${DIM}「このコード...誰が書いた？」${RESET}"
+      slow_echo "  ${CYAN}⚔️  Coder:${RESET}    ${DIM}「...俺だが？」${RESET}"
+      slow_echo "  ${CYAN}🛡️  Reviewer:${RESET}  ${DIM}「テスト、ないよね？」${RESET}"
+      slow_echo "  ${CYAN}⚔️  Coder:${RESET}    ${DIM}「...書きます」${RESET}"
+      ;;
+    3)
+      slow_echo "  ${CYAN}🔮 Researcher:${RESET} ${DIM}「調査完了。最適な手法が判明した」${RESET}"
+      slow_echo "  ${CYAN}🏗️  Architect:${RESET} ${DIM}「さすが斥候。して、その手法とは？」${RESET}"
+      slow_echo "  ${CYAN}🔮 Researcher:${RESET} ${DIM}「Stack Overflowの2位の回答です」${RESET}"
+      slow_echo "  ${CYAN}🏗️  Architect:${RESET} ${DIM}「...1位じゃなくて？」${RESET}"
+      slow_echo "  ${CYAN}🔮 Researcher:${RESET} ${DIM}「1位は10年前の回答で deprecated です」${RESET}"
+      ;;
+    4)
+      slow_echo "  ${CYAN}⚔️  Coder:${RESET}    ${DIM}「よし、一発で動いた！」${RESET}"
+      slow_echo "  ${CYAN}🛡️  Reviewer:${RESET}  ${DIM}「一発で動くコードほど怪しいものはない」${RESET}"
+      slow_echo "  ${CYAN}⚔️  Coder:${RESET}    ${DIM}「疑り深すぎないか...？」${RESET}"
+      slow_echo "  ${CYAN}🛡️  Reviewer:${RESET}  ${DIM}「それが仕事だ」${RESET}"
+      ;;
+    5)
+      slow_echo "  ${CYAN}🏗️  Architect:${RESET} ${DIM}「マイクロサービスで行こう」${RESET}"
+      slow_echo "  ${CYAN}⚔️  Coder:${RESET}    ${DIM}「TODOアプリにマイクロサービス...？」${RESET}"
+      slow_echo "  ${CYAN}🔮 Researcher:${RESET} ${DIM}「軍師殿、費用対効果のデータ出しましょうか」${RESET}"
+      slow_echo "  ${CYAN}🏗️  Architect:${RESET} ${DIM}「...モノリスで行こう」${RESET}"
+      ;;
+  esac
+  echo ""
+}
 
 random_greeting() {
   local idx=$((RANDOM % ${#GREETINGS[@]}))
@@ -55,21 +120,18 @@ random_greeting() {
 }
 
 show_banner() {
-  echo ""
-  echo -e "${YELLOW}  🏰 ══════════════════════════════════════════════════ 🏰${RESET}"
-  echo -e "${BOLD}        C L A U D E   C R E W  —  冒険者ギルド${RESET}"
-  echo -e "${YELLOW}  🏰 ══════════════════════════════════════════════════ 🏰${RESET}"
-  echo ""
-  echo -e "  ${CYAN}$(random_greeting)${RESET}"
+  show_guild_gate
+  echo -e "  ${YELLOW}「$(random_greeting)」${RESET}"
   echo ""
 }
 
 show_guild_members() {
   echo -e "  ${YELLOW}⚜️  【 ギルドメンバー 】${RESET}"
   echo ""
-  for member in "${GUILD_MEMBERS[@]}"; do
-    echo -e "    $member"
-  done
+  slow_echo "    🏗️  ${BOLD}Architect${RESET}  ${DIM}— 軍師。依頼の作戦を練る知恵者。${RESET}"
+  slow_echo "    ⚔️  ${BOLD}Coder${RESET}      ${DIM}— 剣士。コードで敵を斬り伏せる主力。${RESET}"
+  slow_echo "    🛡️  ${BOLD}Reviewer${RESET}   ${DIM}— 守護者。品質の盾でバグを通さぬ番人。${RESET}"
+  slow_echo "    🔮 ${BOLD}Researcher${RESET} ${DIM}— 斥候。未知の領域を探り、道を示す魔導士。${RESET}"
   echo ""
 }
 
@@ -95,7 +157,7 @@ log_guild() {
 # ═══════════════════════════════════════════════════════════════════════════════
 
 show_help() {
-  show_banner
+  show_guild_gate
   echo -e "  ${BOLD}Usage:${RESET}"
   echo ""
   echo -e "    ${GREEN}./summon.sh${RESET}                    ギルド本部で起動"
@@ -187,6 +249,7 @@ case "$ACTION" in
   launch)
     show_banner
     show_guild_members
+    show_banter
 
     # ダンジョン（プロジェクト）を決定
     if [[ -n "$TARGET_DIR" ]]; then
