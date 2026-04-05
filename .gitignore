@@ -7,6 +7,9 @@ node_modules/
 # Memory (contains project-specific knowledge — keep in repo for persistence)
 # Uncomment to exclude: memory/*/
 
+# Logs (generated at runtime)
+logs/
+
 # Secrets
 .env
 .env.local

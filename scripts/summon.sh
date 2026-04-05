@@ -1,0 +1,226 @@
+#!/usr/bin/env bash
+# 🏰 Claude Crew — Guild Summon Script
+# 冒険者ギルドの扉を開き、精鋭たちを召喚する起動スクリプト
+#
+# Usage:
+#   ./summon.sh                    # ギルド本部でCrew起動
+#   ./summon.sh /path/to/project   # 指定のダンジョン（プロジェクト）に出撃
+#   ./summon.sh --setup /path      # ダンジョンにギルド拠点を設営
+#   ./summon.sh --status           # ギルド掲示板を確認
+#   ./summon.sh --watch            # ギルド掲示板をリアルタイム監視
+#   ./summon.sh -h                 # ヘルプ
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CREW_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ギルドの装飾
+# ═══════════════════════════════════════════════════════════════════════════════
+
+RED='\033[1;31m'
+GREEN='\033[1;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[1;34m'
+MAGENTA='\033[1;35m'
+CYAN='\033[1;36m'
+BOLD='\033[1m'
+DIM='\033[2m'
+RESET='\033[0m'
+
+# ギルドマスターの挨拶（ランダム）
+GREETINGS=(
+  "ようこそ、冒険者ギルド『Claude Crew』へ。今日はどんな依頼をこなす？"
+  "おお、ギルドマスター殿。精鋭たちは既に待機している。指示を。"
+  "ギルドの扉が開かれた。四人の冒険者、出撃準備完了。"
+  "今日の依頼書は厚いな...だが心配無用。我がギルドの精鋭に不可能はない。"
+  "バグドラゴンの討伐依頼が入っているぞ。腕の見せ所だ。"
+  "新たな冒険の幕開けだ。さあ、依頼を受け付けよう。"
+  "ギルドランク: S級。今日も最高品質のコードを納品しよう。"
+  "冒険者たちよ、剣を研ぎ、盾を磨け。出陣の時だ。"
+)
+
+# ギルドメンバー紹介
+GUILD_MEMBERS=(
+  "🏗️  ${BOLD}Architect${RESET}  ${DIM}— 軍師。依頼の作戦を練る知恵者。${RESET}"
+  "⚔️  ${BOLD}Coder${RESET}      ${DIM}— 剣士。コードで敵を斬り伏せる主力。${RESET}"
+  "🛡️  ${BOLD}Reviewer${RESET}   ${DIM}— 守護者。品質の盾でバグを通さぬ番人。${RESET}"
+  "🔮 ${BOLD}Researcher${RESET} ${DIM}— 斥候。未知の領域を探り、道を示す魔導士。${RESET}"
+)
+
+random_greeting() {
+  local idx=$((RANDOM % ${#GREETINGS[@]}))
+  echo "${GREETINGS[$idx]}"
+}
+
+show_banner() {
+  echo ""
+  echo -e "${YELLOW}  🏰 ══════════════════════════════════════════════════ 🏰${RESET}"
+  echo -e "${BOLD}        C L A U D E   C R E W  —  冒険者ギルド${RESET}"
+  echo -e "${YELLOW}  🏰 ══════════════════════════════════════════════════ 🏰${RESET}"
+  echo ""
+  echo -e "  ${CYAN}$(random_greeting)${RESET}"
+  echo ""
+}
+
+show_guild_members() {
+  echo -e "  ${YELLOW}⚜️  【 ギルドメンバー 】${RESET}"
+  echo ""
+  for member in "${GUILD_MEMBERS[@]}"; do
+    echo -e "    $member"
+  done
+  echo ""
+}
+
+# ログ関数（ギルド風）
+log_quest() {
+  echo -e "  ${RED}【依頼】${RESET} $1"
+}
+
+log_info() {
+  echo -e "  ${YELLOW}【報告】${RESET} $1"
+}
+
+log_success() {
+  echo -e "  ${GREEN}【達成】${RESET} $1"
+}
+
+log_guild() {
+  echo -e "  ${CYAN}【ギルド】${RESET} $1"
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# オプション解析
+# ═══════════════════════════════════════════════════════════════════════════════
+
+show_help() {
+  show_banner
+  echo -e "  ${BOLD}Usage:${RESET}"
+  echo ""
+  echo -e "    ${GREEN}./summon.sh${RESET}                    ギルド本部で起動"
+  echo -e "    ${GREEN}./summon.sh /path/to/project${RESET}   ダンジョン（プロジェクト）に出撃"
+  echo -e "    ${GREEN}./summon.sh --setup /path${RESET}      ダンジョンにギルド拠点を設営"
+  echo -e "    ${GREEN}./summon.sh --status${RESET}           ギルド掲示板（直近の戦況）"
+  echo -e "    ${GREEN}./summon.sh --watch${RESET}            掲示板をリアルタイム監視"
+  echo -e "    ${GREEN}./summon.sh -h${RESET}                 このヘルプ"
+  echo ""
+  echo -e "  ${DIM}ギルドマスター（Orchestrator）が依頼を受け付け、${RESET}"
+  echo -e "  ${DIM}最適な冒険者に自動で振り分けます。${RESET}"
+  echo -e "  ${DIM}@agent_name で特定の冒険者を直接指名することも可能。${RESET}"
+  echo ""
+}
+
+ACTION="launch"
+TARGET_DIR=""
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --setup)
+      ACTION="setup"
+      TARGET_DIR="${2:?--setup requires a project path}"
+      shift 2
+      ;;
+    --status)
+      ACTION="status"
+      shift
+      ;;
+    --watch)
+      ACTION="watch"
+      shift
+      ;;
+    -h|--help)
+      show_help
+      exit 0
+      ;;
+    *)
+      TARGET_DIR="$1"
+      shift
+      ;;
+  esac
+done
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# アクション実行
+# ═══════════════════════════════════════════════════════════════════════════════
+
+case "$ACTION" in
+  setup)
+    show_banner
+    log_guild "ダンジョンにギルド拠点を設営中..."
+    echo ""
+    bash "$CREW_DIR/scripts/setup.sh" "$TARGET_DIR"
+    echo ""
+    log_success "拠点設営完了。冒険者たちはいつでも出撃できる。"
+    echo ""
+    echo -e "  次回出撃: ${BOLD}./summon.sh $TARGET_DIR${RESET}"
+    echo ""
+    ;;
+
+  status)
+    LOG_FILE="$CREW_DIR/logs/crew.log"
+    if [[ -f "$LOG_FILE" ]]; then
+      echo ""
+      echo -e "  ${YELLOW}📋 【 ギルド掲示板 — 直近の戦況 】${RESET}"
+      echo ""
+      tail -20 "$LOG_FILE"
+      echo ""
+    else
+      echo ""
+      echo -e "  ${DIM}掲示板にはまだ何も貼られていない。${RESET}"
+      echo -e "  ${DIM}冒険者を召喚して、最初の依頼をこなせ。${RESET}"
+      echo ""
+    fi
+    ;;
+
+  watch)
+    LOG_FILE="$CREW_DIR/logs/crew.log"
+    mkdir -p "$CREW_DIR/logs"
+    touch "$LOG_FILE"
+    echo ""
+    echo -e "  ${YELLOW}📋 【 ギルド掲示板 — リアルタイム監視中 】${RESET}"
+    echo -e "  ${DIM}Ctrl+C で監視を終了${RESET}"
+    echo ""
+    tail -f "$LOG_FILE"
+    ;;
+
+  launch)
+    show_banner
+    show_guild_members
+
+    # ダンジョン（プロジェクト）を決定
+    if [[ -n "$TARGET_DIR" ]]; then
+      if [[ ! -d "$TARGET_DIR" ]]; then
+        log_quest "ダンジョン '$TARGET_DIR' が見つからない！斥候の報告を待て。"
+        exit 1
+      fi
+      # ギルド拠点の確認
+      if [[ ! -d "$TARGET_DIR/.claude" ]] || [[ ! -L "$TARGET_DIR/.claude/agents" ]]; then
+        log_info "このダンジョンにはまだ拠点がない。設営する..."
+        bash "$CREW_DIR/scripts/setup.sh" "$TARGET_DIR"
+        echo ""
+      fi
+      log_quest "ダンジョン: ${BOLD}$TARGET_DIR${RESET}"
+      LAUNCH_DIR="$TARGET_DIR"
+    else
+      log_quest "ギルド本部: ${BOLD}$CREW_DIR${RESET}"
+      LAUNCH_DIR="$CREW_DIR"
+    fi
+
+    # 出撃ログ記録
+    bash "$CREW_DIR/scripts/crew_log.sh" info "🏰 Guild opened — 冒険者ギルド開門"
+
+    echo ""
+    log_success "全冒険者、出撃準備完了。ギルドマスターを起動する..."
+    echo ""
+    echo -e "  ${MAGENTA}╔══════════════════════════════════════════╗${RESET}"
+    echo -e "  ${MAGENTA}║${RESET}  ${BOLD}📋 別ターミナルでギルド掲示板を監視:${RESET}  ${MAGENTA}║${RESET}"
+    echo -e "  ${MAGENTA}║${RESET}  ${CYAN}./summon.sh --watch${RESET}                    ${MAGENTA}║${RESET}"
+    echo -e "  ${MAGENTA}╚══════════════════════════════════════════╝${RESET}"
+    echo ""
+
+    # Claude Code（ギルドマスター）起動
+    cd "$LAUNCH_DIR"
+    exec claude
+    ;;
+esac

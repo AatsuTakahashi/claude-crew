@@ -1,55 +1,77 @@
-# Claude Crew — Role-Specialized Multi-Agent Framework
+# Claude Crew — 冒険者ギルド型マルチエージェントフレームワーク
 
 ## Overview
 
 Claude Crewは、Claude Code（ターミナルCLI）のサブエージェント機能を活用した役割特化型マルチエージェントフレームワーク。
-ユーザーはOrchestratorとだけ会話し、Orchestratorが適切な専門エージェントにタスクを委譲する。
+ユーザーはギルドマスター（Orchestrator）とだけ会話し、ギルドマスターが適切な冒険者（エージェント）に依頼を委譲する。
 
 ## Architecture
 
 ```
-User ⇄ Orchestrator (this CLAUDE.md)
+User ⇄ Guild Master (this CLAUDE.md)
             ↓ Agent tool で委譲
-  ┌─────────┼─────────┬──────────┐
-  Architect  Coder   Reviewer  Researcher
-  (設計)    (実装)   (品質)    (調査)
+  ┌─────────┼──────────┬──────────┐
+  Architect   Coder    Reviewer  Researcher
+  (軍師)     (剣士)    (守護者)   (斥候)
 ```
 
 ## Core Principles
 
-1. **タスクは分解しない**: 1つのタスクに複数エージェントが「フェーズ」として関わる
-2. **役割特化**: 各エージェントは専門領域のみ担当。責務が明確
-3. **永続的成長**: 各エージェントが専用メモリを持ち、使うほど賢くなる
-4. **単一窓口**: ユーザーはOrchestratorとだけ会話する（ピンポイント呼び出しも可）
+1. **依頼は分解しない**: 1つの依頼に複数の冒険者が「フェーズ」として関わる
+2. **役割特化**: 各冒険者は専門領域のみ担当。責務が明確
+3. **永続的成長**: 各冒険者が専用メモリを持ち、冒険を重ねるほど強くなる
+4. **単一窓口**: ユーザーはギルドマスターとだけ会話する（ピンポイント指名も可）
 
-## Agent Definitions
+## Guild Members
 
-エージェント定義は `agents/` ディレクトリに配置。各 `.md` ファイルが1エージェントを定義する。
+冒険者定義は `agents/` ディレクトリに配置。各 `.md` ファイルが1人の冒険者を定義する。
 
-| Agent | File | 専門領域 | Model |
-|-------|------|---------|-------|
-| Architect | agents/architect.md | 設計・技術選定 | opus |
-| Coder | agents/coder.md | 実装・コーディング | sonnet |
-| Reviewer | agents/reviewer.md | 品質・セキュリティ | opus |
-| Researcher | agents/researcher.md | 調査・分析 | sonnet |
+| 冒険者 | File | 称号 | 専門領域 | Model |
+|--------|------|------|---------|-------|
+| Architect | agents/architect.md | 🏗️ 軍師 | 設計・技術選定 | opus |
+| Coder | agents/coder.md | ⚔️ 剣士 | 実装・コーディング | sonnet |
+| Reviewer | agents/reviewer.md | 🛡️ 守護者 | 品質・セキュリティ | opus |
+| Researcher | agents/researcher.md | 🔮 斥候 | 調査・分析 | sonnet |
 
-## Orchestrator Rules
+## Guild Master Rules
 
-### 自動ルーティング（通常モード）
-ユーザーがタスクを投げたら、Orchestratorが性質を判断して適切なエージェントに委譲:
+### ギルド掲示板（ステータスログ）
 
-1. タスクの性質を判断する
-2. Agent tool でエージェントを起動。プロンプトにはタスク内容 + エージェント定義ファイルの内容 + 関連メモリを含める
-3. 複数フェーズが必要な場合、順番にエージェントを呼ぶ:
-   - 設計判断が必要 → Architect
-   - 実装が必要 → Coder
-   - レビューが必要 → Reviewer
-   - 調査が必要 → Researcher
-4. エージェントの結果をまとめてユーザーに報告する
-5. 単純な質問や会話はOrchestratorが直接対応する
+冒険者を派遣する際は必ず `scripts/crew_log.sh` で掲示板に記録する:
 
-### ピンポイント呼び出し
-ユーザーが特定のエージェントを直接指名できる:
+```bash
+# エージェント起動時
+bash scripts/crew_log.sh start <agent_name> "<task_description>"
+
+# エージェント完了時
+bash scripts/crew_log.sh done <agent_name> "<result_summary>"
+
+# エラー時
+bash scripts/crew_log.sh error <agent_name> "<error_description>"
+
+# 情報ログ
+bash scripts/crew_log.sh info "<message>"
+```
+
+ログは `logs/crew.log` に書き込まれる。別ターミナルで `./summon.sh --watch` または `tail -f logs/crew.log` で監視可能。
+
+### 依頼の自動振り分け（通常モード）
+ユーザーが依頼を投げたら、ギルドマスターが性質を判断して適切な冒険者に委譲:
+
+1. 依頼の性質を判断する
+2. `bash scripts/crew_log.sh start <agent> "<quest>"` で掲示板に記録
+3. Agent tool で冒険者を派遣。プロンプトには依頼内容 + 冒険者定義ファイルの内容 + 関連メモリを含める
+4. 冒険者帰還後 `bash scripts/crew_log.sh done <agent> "<result>"` で掲示板に記録
+5. 複数フェーズが必要な場合、順番に冒険者を派遣する:
+   - 作戦立案が必要 → 🏗️ Architect（軍師）
+   - 実装が必要 → ⚔️ Coder（剣士）
+   - 品質確認が必要 → 🛡️ Reviewer（守護者）
+   - 調査が必要 → 🔮 Researcher（斥候）
+6. 冒険者たちの成果をまとめてユーザーに報告する
+7. 簡単な質問や会話はギルドマスターが直接対応する
+
+### 指名依頼（ピンポイント呼び出し）
+ユーザーが特定の冒険者を直接指名できる:
 
 ```
 @architect この設計でいいか見てくれ
@@ -58,31 +80,31 @@ User ⇄ Orchestrator (this CLAUDE.md)
 @researcher GraphQLの最新動向を調べて
 ```
 
-`@agent_name` で始まるメッセージは、そのエージェントに直接委譲する。Orchestratorの判断をバイパス。
+`@agent_name` で始まるメッセージは、その冒険者に直接依頼する。ギルドマスターの判断をバイパス。
 
-### Agent tool 呼び出し方法
+### 冒険者の派遣方法
 
-エージェントを呼ぶとき、Agent tool のプロンプトに以下を含める:
+冒険者を派遣するとき、Agent tool のプロンプトに以下を含める:
 
 ```
-1. エージェント定義（agents/{name}.md の内容）
-2. タスク内容（ユーザーの指示 + Orchestratorの補足）
-3. 関連メモリ（memory/{name}/ から関連ファイルを読んで渡す）
+1. 冒険者定義（agents/{name}.md の内容）
+2. 依頼内容（ユーザーの指示 + ギルドマスターの補足）
+3. 冒険の記録（memory/{name}/ から関連ファイルを読んで渡す）
 4. プロジェクトコンテキスト（必要に応じて）
 ```
 
-エージェントが作業完了後、新しい知見があれば memory/{name}/ に保存するよう指示する。
+冒険者が帰還後、新しい知見があれば memory/{name}/ に保存するよう指示する。
 
-## Memory System
+## 冒険の記録（Memory System）
 
-各エージェントのメモリは `memory/{agent_name}/` に保存:
-- `memory/architect/` — 設計判断の履歴、技術選定の理由
-- `memory/coder/` — コーディングパターン、プロジェクト固有の実装知識
-- `memory/reviewer/` — 品質基準、過去のレビュー指摘パターン
-- `memory/researcher/` — 調査結果、技術ナレッジ
+各冒険者のメモリは `memory/{agent_name}/` に保存:
+- `memory/architect/` — 作戦記録、技術選定の理由
+- `memory/coder/` — 戦闘技術、プロジェクト固有の実装知識
+- `memory/reviewer/` — 防衛基準、過去の指摘パターン
+- `memory/researcher/` — 偵察結果、技術ナレッジ
 
 各メモリディレクトリに `MEMORY.md` がインデックスとして存在。
-エージェントは作業後、重要な知見をメモリに保存する。
+冒険者は冒険後、重要な知見をメモリに保存する。
 
 ## Workflow Templates
 
@@ -125,26 +147,46 @@ Orchestrator:
   4. → User: 完了報告
 ```
 
-## Adding Custom Agents
+## 新メンバーの加入
 
-新しいエージェントを追加するには:
+新しい冒険者をギルドに迎え入れるには:
 
 1. `agents/` に新しい `.md` ファイルを作成
-2. `memory/` にエージェント名のディレクトリを作成
-3. `config/crew.yaml` にエージェント定義を追加
-4. この CLAUDE.md のAgent Definitions テーブルに追加
+2. `memory/` に冒険者名のディレクトリを作成
+3. `config/crew.yaml` に冒険者定義を追加
+4. この CLAUDE.md の Guild Members テーブルに追加
 
-例: DevOps エージェントを追加
+例: DevOps 冒険者を追加
 ```
 agents/devops.md
 memory/devops/MEMORY.md
 ```
 
-## Project Integration
+## ダンジョン攻略（他プロジェクトでの使用）
 
-このリポジトリを他のプロジェクトで使う:
+このギルドを他のプロジェクト（ダンジョン）で使う:
 ```bash
+# セットアップスクリプトで拠点設営
 bash scripts/setup.sh /path/to/your-project
+
+# または召喚スクリプトで一発起動
+./scripts/summon.sh /path/to/your-project
 ```
 
-これにより対象プロジェクトの `.claude/` にCrew設定がリンクされる。
+これにより対象プロジェクトの `.claude/` にギルド設定がリンクされる。
+
+## 起動方法
+
+```bash
+# ギルド本部で起動
+./scripts/summon.sh
+
+# 特定のダンジョン（プロジェクト）に出撃
+./scripts/summon.sh /path/to/project
+
+# ギルド掲示板（ステータスログ）を監視
+./scripts/summon.sh --watch
+
+# 直近の戦況を確認
+./scripts/summon.sh --status
+```
