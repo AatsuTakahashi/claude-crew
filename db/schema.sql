@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS memories (
     category TEXT NOT NULL DEFAULT 'general',
     tags TEXT DEFAULT '',
     source TEXT DEFAULT 'user',
+    embedding TEXT DEFAULT NULL,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
     is_active INTEGER DEFAULT 1
