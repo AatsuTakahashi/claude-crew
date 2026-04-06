@@ -145,6 +145,22 @@ bash scripts/knowledge.sh add "内容" "カテゴリ" --domain ドメイン --pr
 bash scripts/knowledge.sh add "RSpecでモック多用するとCI通るのに本番で壊れる" "lesson" --domain test --project greencare --tags "RSpec,mock"
 ```
 
+## ナレッジ自動記録ルール
+
+ワークフロー完了後、ギルドマスターは必ず pattern-learner を呼び出してナレッジを記録する。
+
+**pattern-learnerに渡す情報:**
+- ユーザーの元の依頼
+- 使用したエージェントと順序
+- 各エージェントの結果サマリ
+- 手戻り・失敗の有無と理由
+- 対象プロジェクト名とドメイン
+
+**記録タイミング:**
+- ワークフロー正常完了後 → pattern-learnerを呼ぶ
+- ワークフロー失敗時 → 失敗の教訓としてpattern-learnerを呼ぶ（lessonカテゴリ）
+- ユーザーが「覚えておいて」と言った時 → 即座にpattern-learnerを呼ぶ
+
 ## Workflow Templates
 
 ### 新機能追加 (feature)
@@ -173,6 +189,7 @@ Guild Master:
   4. → task-executor: 修正実装
   5. → code-reviewer: 修正レビュー
   6. → pr-creator: PR作成
+  7. → pattern-learner: フロー記録
 ```
 
 ### 技術調査 (research)
@@ -181,6 +198,7 @@ User: "Next.js 15の変更点を調べて"
 Guild Master:
   1. → what-finder: 情報収集・影響範囲特定
   2. → User: 調査結果報告
+  3. → pattern-learner: フロー記録
 ```
 
 ### リファクタリング (refactor)
@@ -192,6 +210,7 @@ Guild Master:
   3. → work-planner: 作業計画
   4. → task-executor: 実施
   5. → code-reviewer: レビュー
+  6. → pattern-learner: フロー記録
 ```
 
 ## Gitルール
