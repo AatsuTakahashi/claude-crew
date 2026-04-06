@@ -13,16 +13,20 @@
 
 ## Session Start（必須）
 
-依頼を受けたら、まず依頼内容でベクトル検索を実行する：
+依頼を受けたら、まず依頼内容に関連するナレッジを構造化フィルタで検索する：
 
 ```bash
-bash scripts/knowledge.sh search "依頼内容のキーワード" --limit 10
-```
+# ドメインで絞る
+bash scripts/knowledge.sh search --domain auth --limit 10
 
-検索結果を踏まえて冒険者を派遣する。カテゴリで絞り込む場合：
+# プロジェクト × カテゴリで絞る
+bash scripts/knowledge.sh search --project greencare --category lesson
 
-```bash
-bash scripts/knowledge.sh search "キーワード" --limit 10 --category dev
+# キーワードで絞る
+bash scripts/knowledge.sh search --keyword "JWT" --limit 10
+
+# 複数条件を組み合わせる
+bash scripts/knowledge.sh search --domain auth --project greencare --category dev
 ```
 
 ## 冒険者選択ルール
@@ -116,10 +120,15 @@ bash scripts/crew_log.sh info "<message>"
 
 #### ナレッジの追加
 
-冒険者の作業結果から新しい知見が得られた場合、ナレッジとして蓄積する（自動でembedding生成）：
+冒険者の作業結果から新しい知見が得られた場合、構造化メタデータつきでナレッジを蓄積する：
 
 ```bash
-bash scripts/knowledge.sh add "内容" "カテゴリ" "タグ" "ソース"
+bash scripts/knowledge.sh add "内容" "カテゴリ" --domain ドメイン --project プロジェクト --agent エージェント --tags "タグ"
+```
+
+例：
+```bash
+bash scripts/knowledge.sh add "RSpecでモック多用するとCI通るのに本番で壊れる" "lesson" --domain test --project greencare --tags "RSpec,mock"
 ```
 
 ## Workflow Templates

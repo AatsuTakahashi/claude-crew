@@ -1,11 +1,10 @@
 #!/bin/bash
-# knowledge.sh — ナレッジDB CLI（ベクトル検索対応）
+# knowledge.sh — ナレッジDB CLI（構造化検索）
 #
 # Usage:
-#   bash scripts/knowledge.sh add <content> <category> [tags] [source]
-#   bash scripts/knowledge.sh search <query> [--limit N] [--category CAT]
-#   bash scripts/knowledge.sh list [category]
-#   bash scripts/knowledge.sh reindex
+#   bash scripts/knowledge.sh add <content> <category> [--domain D] [--project P] [--agent A] [--tags T] [--source S]
+#   bash scripts/knowledge.sh search [--category C] [--domain D] [--project P] [--agent A] [--keyword K] [--limit N]
+#   bash scripts/knowledge.sh list [--category C] [--domain D] [--project P]
 #   bash scripts/knowledge.sh migrate
 
 set -euo pipefail
@@ -13,79 +12,91 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 CREW_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 DB_PATH="$CREW_DIR/knowledge.db"
-VECTOR_SEARCH="$SCRIPT_DIR/vector_search.py"
 
 ensure_db() {
     if [[ ! -f "$DB_PATH" ]]; then
         bash "$CREW_DIR/db/init.sh"
     fi
-    # Apply migration if embedding column doesn't exist
-    if ! sqlite3 "$DB_PATH" "PRAGMA table_info(memories);" | grep -q "embedding"; then
-        sqlite3 "$DB_PATH" < "$CREW_DIR/db/migrate_001_embedding.sql" 2>/dev/null || true
-        echo "Applied migration: added embedding column" >&2
+    # Apply migrations if needed
+    if ! sqlite3 "$DB_PATH" "PRAGMA table_info(memories);" | grep -q "domain"; then
+        sqlite3 "$DB_PATH" < "$CREW_DIR/db/migrate_002_structured_fields.sql" 2>/dev/null || true
+        echo "Applied migration: added structured fields" >&2
     fi
 }
 
+# Parse --key value pairs from args, starting at given position
+parse_opts() {
+    OPTS_category="" OPTS_domain="" OPTS_project="" OPTS_agent="" OPTS_tags="" OPTS_source="agent" OPTS_keyword="" OPTS_limit="10"
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --category) OPTS_category="$2"; shift 2 ;;
+            --domain)   OPTS_domain="$2";   shift 2 ;;
+            --project)  OPTS_project="$2";  shift 2 ;;
+            --agent)    OPTS_agent="$2";    shift 2 ;;
+            --tags)     OPTS_tags="$2";     shift 2 ;;
+            --source)   OPTS_source="$2";   shift 2 ;;
+            --keyword)  OPTS_keyword="$2";  shift 2 ;;
+            --limit)    OPTS_limit="$2";    shift 2 ;;
+            *) shift ;;
+        esac
+    done
+}
+
+escape_sql() {
+    echo "$1" | sed "s/'/''/g"
+}
+
 cmd_add() {
-    local content="${1:?Usage: knowledge.sh add <content> <category> [tags] [source]}"
-    local category="${2:?Usage: knowledge.sh add <content> <category> [tags] [source]}"
-    local tags="${3:-}"
-    local source="${4:-agent}"
-    local now
-    now=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+    local content="${1:?Usage: knowledge.sh add <content> <category> [options]}"
+    local category="${2:?Usage: knowledge.sh add <content> <category> [options]}"
+    shift 2
+    parse_opts "$@"
 
     ensure_db
 
-    # Insert the memory
+    local now
+    now=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+    local escaped_content
+    escaped_content=$(escape_sql "$content")
+
+    local domain_val="NULL" project_val="NULL" agent_val="NULL"
+    [[ -n "$OPTS_domain" ]]  && domain_val="'$(escape_sql "$OPTS_domain")'"
+    [[ -n "$OPTS_project" ]] && project_val="'$(escape_sql "$OPTS_project")'"
+    [[ -n "$OPTS_agent" ]]   && agent_val="'$(escape_sql "$OPTS_agent")'"
+
     local id
-    id=$(sqlite3 "$DB_PATH" "INSERT INTO memories (content, category, tags, source, created_at, updated_at) VALUES ('$(echo "$content" | sed "s/'/''/g")', '$category', '$tags', '$source', '$now', '$now'); SELECT last_insert_rowid();")
+    id=$(sqlite3 "$DB_PATH" "INSERT INTO memories (content, category, domain, project, agent, tags, source, created_at, updated_at) VALUES ('$escaped_content', '$category', $domain_val, $project_val, $agent_val, '$(escape_sql "$OPTS_tags")', '$(escape_sql "$OPTS_source")', '$now', '$now'); SELECT last_insert_rowid();")
 
-    echo "Added memory #$id ($category)" >&2
-
-    # Auto-embed if OPENAI_API_KEY is available
-    if [[ -n "${OPENAI_API_KEY:-}" ]] || [[ -f "$CREW_DIR/.env" ]]; then
-        python3 "$VECTOR_SEARCH" embed "$id" 2>&1 >&2 || echo "Warning: embedding failed (API key missing or invalid)" >&2
-    else
-        echo "Tip: Set OPENAI_API_KEY to auto-embed on add" >&2
-    fi
-
+    echo "Added memory #$id (category=$category, domain=${OPTS_domain:-none}, project=${OPTS_project:-none})" >&2
     echo "$id"
 }
 
 cmd_search() {
     ensure_db
+    parse_opts "$@"
 
-    # Check if any embeddings exist
-    local embedded_count
-    embedded_count=$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM memories WHERE is_active = 1 AND embedding IS NOT NULL;")
+    local where="is_active = 1"
+    [[ -n "$OPTS_category" ]] && where="$where AND category = '$(escape_sql "$OPTS_category")'"
+    [[ -n "$OPTS_domain" ]]   && where="$where AND domain = '$(escape_sql "$OPTS_domain")'"
+    [[ -n "$OPTS_project" ]]  && where="$where AND project = '$(escape_sql "$OPTS_project")'"
+    [[ -n "$OPTS_agent" ]]    && where="$where AND agent = '$(escape_sql "$OPTS_agent")'"
+    [[ -n "$OPTS_keyword" ]]  && where="$where AND (content LIKE '%$(escape_sql "$OPTS_keyword")%' OR tags LIKE '%$(escape_sql "$OPTS_keyword")%')"
 
-    if [[ "$embedded_count" -gt 0 ]]; then
-        # Vector search (semantic)
-        python3 "$VECTOR_SEARCH" search "$@"
-    else
-        # Fallback to LIKE search
-        local query="${1:?Usage: knowledge.sh search <query>}"
-        echo "[fallback: LIKE search — run 'knowledge.sh reindex' for vector search]" >&2
-        sqlite3 -json "$DB_PATH" \
-            "SELECT id, content, category, tags FROM memories WHERE is_active = 1 AND content LIKE '%${query}%' ORDER BY updated_at DESC LIMIT 10;"
-    fi
+    sqlite3 -json "$DB_PATH" \
+        "SELECT id, content, category, domain, project, agent, tags FROM memories WHERE $where ORDER BY updated_at DESC LIMIT $OPTS_limit;"
 }
 
 cmd_list() {
     ensure_db
-    local category="${1:-}"
-    if [[ -n "$category" ]]; then
-        sqlite3 -json "$DB_PATH" \
-            "SELECT id, content, category, tags, embedding IS NOT NULL as has_embedding FROM memories WHERE is_active = 1 AND category = '$category' ORDER BY updated_at DESC;"
-    else
-        sqlite3 -json "$DB_PATH" \
-            "SELECT id, content, category, tags, embedding IS NOT NULL as has_embedding FROM memories WHERE is_active = 1 ORDER BY updated_at DESC;"
-    fi
-}
+    parse_opts "$@"
 
-cmd_reindex() {
-    ensure_db
-    python3 "$VECTOR_SEARCH" reindex
+    local where="is_active = 1"
+    [[ -n "$OPTS_category" ]] && where="$where AND category = '$(escape_sql "$OPTS_category")'"
+    [[ -n "$OPTS_domain" ]]   && where="$where AND domain = '$(escape_sql "$OPTS_domain")'"
+    [[ -n "$OPTS_project" ]]  && where="$where AND project = '$(escape_sql "$OPTS_project")'"
+
+    sqlite3 -json "$DB_PATH" \
+        "SELECT id, content, category, domain, project, agent, tags FROM memories WHERE $where ORDER BY updated_at DESC;"
 }
 
 cmd_migrate() {
@@ -97,22 +108,34 @@ case "${1:-help}" in
     add)      shift; cmd_add "$@" ;;
     search)   shift; cmd_search "$@" ;;
     list)     shift; cmd_list "$@" ;;
-    reindex)  shift; cmd_reindex "$@" ;;
     migrate)  shift; cmd_migrate "$@" ;;
     *)
         cat <<'USAGE'
-knowledge.sh — ナレッジDB CLI（ベクトル検索対応）
+knowledge.sh — ナレッジDB CLI（構造化検索）
 
 Commands:
-  add <content> <category> [tags] [source]  記憶を追加（自動embedding）
-  search <query> [--limit N] [--category C] 意味検索（ベクトル類似度）
-  list [category]                           一覧表示
-  reindex                                   全記憶のembeddingを再生成
-  migrate                                   DBマイグレーション適用
+  add <content> <category> [options]   記憶を追加
+  search [options]                     構造化フィルタで検索
+  list [options]                       一覧表示
+  migrate                              DBマイグレーション適用
+
+Options (add):
+  --domain <domain>      技術ドメイン (auth, db, api, frontend, infra, test)
+  --project <project>    プロジェクト名 (greencare, jarvis, ajisai)
+  --agent <agent>        対象エージェント (task-executor, code-reviewer, etc.)
+  --tags <tags>          自由タグ (カンマ区切り)
+  --source <source>      記録元 (default: agent)
+
+Options (search):
+  --category <category>  カテゴリで絞る (lesson, dev, judgment, pattern, skill)
+  --domain <domain>      ドメインで絞る
+  --project <project>    プロジェクトで絞る
+  --agent <agent>        エージェントで絞る
+  --keyword <keyword>    内容・タグのキーワード検索
+  --limit <N>            取得件数 (default: 10)
 
 Categories: daily, dev, judgment, learning, lesson, skill, pattern
-
-Requires: OPENAI_API_KEY (env or .env file)
+Domains:    auth, db, api, frontend, infra, test
 USAGE
         ;;
 esac
