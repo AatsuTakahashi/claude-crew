@@ -61,7 +61,7 @@ show_guild_gate() {
 GREETINGS=(
   "ようこそ、冒険者ギルド『Claude Crew』へ。今日はどんな依頼をこなす？"
   "おお、ギルドマスター殿。精鋭たちは既に待機している。指示を。"
-  "ギルドの扉が開かれた。10人の冒険者、出撃準備完了。"
+  "ギルドの扉が開かれた。11人の冒険者、出撃準備完了。"
   "今日の依頼書は厚いな...だが心配無用。我がギルドの精鋭に不可能はない。"
   "バグドラゴンの討伐依頼が入っているぞ。腕の見せ所だ。"
   "新たな冒険の幕開けだ。さあ、依頼を受け付けよう。"
@@ -138,6 +138,7 @@ show_guild_members() {
   slow_echo "    📮 ${BOLD}PR-Creator${RESET}      ${DIM}— 伝令兵。成果を世に届ける使者。${RESET}"
   slow_echo "    📖 ${BOLD}Notion-Writer${RESET}   ${DIM}— 記録官。冒険の記録をNotionに刻む。${RESET}"
   slow_echo "    🧠 ${BOLD}Pattern-Learner${RESET} ${DIM}— 賢者。経験からパターンを学ぶ知者。${RESET}"
+  slow_echo "    🧬 ${BOLD}Agent-Crafter${RESET}   ${DIM}— 創造師。新たな冒険者を設計・創出する。${RESET}"
   echo ""
 }
 

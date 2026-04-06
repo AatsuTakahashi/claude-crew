@@ -37,6 +37,7 @@ get_agent_title() {
     pr-creator)      echo "📮 伝令兵 PR-Creator" ;;
     notion-writer)   echo "📖 記録官 Notion-Writer" ;;
     pattern-learner) echo "🧠 賢者 Pattern-Learner" ;;
+    agent-crafter)   echo "🧬 創造師 Agent-Crafter" ;;
     *)               echo "🤖 冒険者 $1" ;;
   esac
 }
@@ -122,6 +123,14 @@ get_start_flavor() {
         "「同じ過ちを繰り返さぬよう、学ばねばならぬ」"
         "knowledge.dbに新たな知恵が刻まれようとしている"
         "賢者の目が過去を見通し、未来の道を照らす"
+      )
+      ;;
+    agent-crafter)
+      local FLAVORS=(
+        "創造師が設計図を広げた。新たな仲間を生み出す..."
+        "「既存の冒険者では足りぬ。ならば、作ろう」"
+        "ギルドの名簿に新たな一行が書き加えられようとしている"
+        "創造師の目が光る。ギルドに新たな力が加わる"
       )
       ;;
     *)
@@ -215,6 +224,14 @@ get_done_flavor() {
         "ギルドの知恵がまた一つ増えた"
       )
       ;;
+    agent-crafter)
+      local FLAVORS=(
+        "創造師が設計図を閉じた。新たな冒険者が誕生した"
+        "「ようこそギルドへ。共に戦おう」"
+        "ギルドの名簿に新たな名前が刻まれた"
+        "新たな仲間がギルドの門をくぐった"
+      )
+      ;;
     *)
       local FLAVORS=("冒険者が帰還した")
       ;;
@@ -236,6 +253,7 @@ get_error_flavor() {
     pr-creator)       echo "伝令兵の馬が道に迷った...PR作成に失敗" ;;
     notion-writer)    echo "記録官のペンが折れた。Notion接続に問題が..." ;;
     pattern-learner)  echo "賢者「...まだパターンが見えない」" ;;
+    agent-crafter)    echo "創造師「...この依頼に合う冒険者の設計が難航している」" ;;
     *)                echo "冒険者が負傷した。撤退！" ;;
   esac
 }
