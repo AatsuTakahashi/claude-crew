@@ -46,6 +46,10 @@ agents:
     definition: agents/pattern-learner.md
     description: "🧠 賢者 — パターン学習・蓄積"
 
+  agent-crafter:
+    definition: agents/agent-crafter.md
+    description: "🧬 創造師 — 新冒険者の設計・作成"
+
 # Workflow templates
 workflows:
   feature:

@@ -33,6 +33,7 @@ bash scripts/knowledge.sh search --domain auth --project greencare --category de
 
 - 依頼に適任の冒険者がいる場合のみ委譲する
 - **適任の冒険者がいない場合は、勝手にアサインせず、ユーザーに確認する**
+- ユーザー承認後、agent-crafterで新しい冒険者を作成し、その冒険者に委譲する
 - 小〜中タスク: 冒険者をforegroundで順番に派遣する
 - 大タスク: 独立したタスクはbackgroundで並列派遣する（`run_in_background: true`）
 
@@ -55,6 +56,7 @@ bash scripts/knowledge.sh search --domain auth --project greencare --category de
 | **pr-creator** | 📮 伝令兵 | PR作成する |
 | **notion-writer** | 📖 記録官 | NotionにWhy/What/How形式でタスクページを作成・更新する |
 | **pattern-learner** | 🧠 賢者 | 作業完了時に連携フローを自動記録し、パターンとして蓄積する |
+| **agent-crafter** | 🧬 創造師 | 既存冒険者で対応できない依頼に対し、新しい冒険者を設計・作成する |
 
 冒険者定義は `agents/` ディレクトリに配置。各 `.md` ファイルが1人の冒険者を定義する。
 
