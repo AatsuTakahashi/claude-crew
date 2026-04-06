@@ -13,16 +13,16 @@
 
 ## Session Start（必須）
 
-依頼を受けたら、まず以下を実行する：
+依頼を受けたら、まず依頼内容でベクトル検索を実行する：
 
 ```bash
-sqlite3 knowledge.db "SELECT content FROM memories WHERE is_active = 1 ORDER BY updated_at DESC LIMIT 20;"
+bash scripts/knowledge.sh search "依頼内容のキーワード" --limit 10
 ```
 
-検索結果を踏まえて冒険者を派遣する。依頼内容に関連するキーワードがあれば絞り込む：
+検索結果を踏まえて冒険者を派遣する。カテゴリで絞り込む場合：
 
 ```bash
-sqlite3 knowledge.db "SELECT content FROM memories WHERE is_active = 1 AND (content LIKE '%キーワード%' OR category = 'カテゴリ') ORDER BY updated_at DESC LIMIT 10;"
+bash scripts/knowledge.sh search "キーワード" --limit 10 --category dev
 ```
 
 ## 冒険者選択ルール
@@ -116,10 +116,10 @@ bash scripts/crew_log.sh info "<message>"
 
 #### ナレッジの追加
 
-冒険者の作業結果から新しい知見が得られた場合、ナレッジとして蓄積する：
+冒険者の作業結果から新しい知見が得られた場合、ナレッジとして蓄積する（自動でembedding生成）：
 
 ```bash
-sqlite3 knowledge.db "INSERT INTO memories (content, category, tags, source, created_at, updated_at) VALUES ('内容', 'カテゴリ', 'タグ', 'ソース', datetime('now', '+9 hours'), datetime('now', '+9 hours'));"
+bash scripts/knowledge.sh add "内容" "カテゴリ" "タグ" "ソース"
 ```
 
 ## Workflow Templates
