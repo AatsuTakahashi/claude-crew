@@ -76,39 +76,39 @@ show_banter() {
   echo ""
   case $BANTER_SET in
     0)
-      slow_echo "  ${CYAN}⚔️  Coder:${RESET}    ${DIM}「今日こそあのバグを仕留める...！」${RESET}"
-      slow_echo "  ${CYAN}🛡️  Reviewer:${RESET}  ${DIM}「落ち着け剣士。まずは私のレビューを通してからだ」${RESET}"
-      slow_echo "  ${CYAN}⚔️  Coder:${RESET}    ${DIM}「...はい」${RESET}"
+      slow_echo "  ${CYAN}⚔️  剣士:${RESET}     ${DIM}「今日こそあのバグを仕留める...！」${RESET}"
+      slow_echo "  ${CYAN}🛡️  守護者:${RESET}   ${DIM}「落ち着け剣士。まずは私のレビューを通してからだ」${RESET}"
+      slow_echo "  ${CYAN}⚔️  剣士:${RESET}     ${DIM}「...はい」${RESET}"
       ;;
     1)
-      slow_echo "  ${CYAN}🏗️  Architect:${RESET} ${DIM}「この設計、完璧だと思わないか？」${RESET}"
-      slow_echo "  ${CYAN}🔮 Researcher:${RESET} ${DIM}「軍師殿、似た構成のOSSが3つ炎上してます」${RESET}"
-      slow_echo "  ${CYAN}🏗️  Architect:${RESET} ${DIM}「...設計を見直そう」${RESET}"
+      slow_echo "  ${CYAN}🏗️  軍師:${RESET}     ${DIM}「この設計、完璧だと思わないか？」${RESET}"
+      slow_echo "  ${CYAN}🔮 斥候:${RESET}     ${DIM}「軍師殿、似た構成のOSSが3つ炎上してます」${RESET}"
+      slow_echo "  ${CYAN}🏗️  軍師:${RESET}     ${DIM}「...設計を見直そう」${RESET}"
       ;;
     2)
-      slow_echo "  ${CYAN}🛡️  Reviewer:${RESET}  ${DIM}「このコード...誰が書いた？」${RESET}"
-      slow_echo "  ${CYAN}⚔️  Coder:${RESET}    ${DIM}「...俺だが？」${RESET}"
-      slow_echo "  ${CYAN}🛡️  Reviewer:${RESET}  ${DIM}「テスト、ないよね？」${RESET}"
-      slow_echo "  ${CYAN}⚔️  Coder:${RESET}    ${DIM}「...書きます」${RESET}"
+      slow_echo "  ${CYAN}🛡️  守護者:${RESET}   ${DIM}「このコード...誰が書いた？」${RESET}"
+      slow_echo "  ${CYAN}⚔️  剣士:${RESET}     ${DIM}「...俺だが？」${RESET}"
+      slow_echo "  ${CYAN}🛡️  守護者:${RESET}   ${DIM}「テスト、ないよね？」${RESET}"
+      slow_echo "  ${CYAN}⚔️  剣士:${RESET}     ${DIM}「...書きます」${RESET}"
       ;;
     3)
-      slow_echo "  ${CYAN}🔮 Researcher:${RESET} ${DIM}「調査完了。最適な手法が判明した」${RESET}"
-      slow_echo "  ${CYAN}🏗️  Architect:${RESET} ${DIM}「さすが斥候。して、その手法とは？」${RESET}"
-      slow_echo "  ${CYAN}🔮 Researcher:${RESET} ${DIM}「Stack Overflowの2位の回答です」${RESET}"
-      slow_echo "  ${CYAN}🏗️  Architect:${RESET} ${DIM}「...1位じゃなくて？」${RESET}"
-      slow_echo "  ${CYAN}🔮 Researcher:${RESET} ${DIM}「1位は10年前の回答で deprecated です」${RESET}"
+      slow_echo "  ${CYAN}🔮 斥候:${RESET}     ${DIM}「調査完了。最適な手法が判明した」${RESET}"
+      slow_echo "  ${CYAN}🏗️  軍師:${RESET}     ${DIM}「さすが斥候。して、その手法とは？」${RESET}"
+      slow_echo "  ${CYAN}🔮 斥候:${RESET}     ${DIM}「Stack Overflowの2位の回答です」${RESET}"
+      slow_echo "  ${CYAN}🏗️  軍師:${RESET}     ${DIM}「...1位じゃなくて？」${RESET}"
+      slow_echo "  ${CYAN}🔮 斥候:${RESET}     ${DIM}「1位は10年前の回答で deprecated です」${RESET}"
       ;;
     4)
-      slow_echo "  ${CYAN}⚔️  Coder:${RESET}    ${DIM}「よし、一発で動いた！」${RESET}"
-      slow_echo "  ${CYAN}🛡️  Reviewer:${RESET}  ${DIM}「一発で動くコードほど怪しいものはない」${RESET}"
-      slow_echo "  ${CYAN}⚔️  Coder:${RESET}    ${DIM}「疑り深すぎないか...？」${RESET}"
-      slow_echo "  ${CYAN}🛡️  Reviewer:${RESET}  ${DIM}「それが仕事だ」${RESET}"
+      slow_echo "  ${CYAN}⚔️  剣士:${RESET}     ${DIM}「よし、一発で動いた！」${RESET}"
+      slow_echo "  ${CYAN}🛡️  守護者:${RESET}   ${DIM}「一発で動くコードほど怪しいものはない」${RESET}"
+      slow_echo "  ${CYAN}⚔️  剣士:${RESET}     ${DIM}「疑り深すぎないか...？」${RESET}"
+      slow_echo "  ${CYAN}🛡️  守護者:${RESET}   ${DIM}「それが仕事だ」${RESET}"
       ;;
     5)
-      slow_echo "  ${CYAN}🏗️  Architect:${RESET} ${DIM}「マイクロサービスで行こう」${RESET}"
-      slow_echo "  ${CYAN}⚔️  Coder:${RESET}    ${DIM}「TODOアプリにマイクロサービス...？」${RESET}"
-      slow_echo "  ${CYAN}🔮 Researcher:${RESET} ${DIM}「軍師殿、費用対効果のデータ出しましょうか」${RESET}"
-      slow_echo "  ${CYAN}🏗️  Architect:${RESET} ${DIM}「...モノリスで行こう」${RESET}"
+      slow_echo "  ${CYAN}🏗️  軍師:${RESET}     ${DIM}「マイクロサービスで行こう」${RESET}"
+      slow_echo "  ${CYAN}⚔️  剣士:${RESET}     ${DIM}「TODOアプリにマイクロサービス...？」${RESET}"
+      slow_echo "  ${CYAN}🔮 斥候:${RESET}     ${DIM}「軍師殿、費用対効果のデータ出しましょうか」${RESET}"
+      slow_echo "  ${CYAN}🏗️  軍師:${RESET}     ${DIM}「...モノリスで行こう」${RESET}"
       ;;
   esac
   echo ""
