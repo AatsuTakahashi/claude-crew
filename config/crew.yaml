@@ -1,72 +1,110 @@
 # Claude Crew Configuration
-# このファイルでエージェント構成をカスタマイズ
+# このファイルでギルド構成をカスタマイズ
 
 crew:
   name: "default"
-  description: "標準的な開発チーム構成"
+  description: "ai-agent-guild準拠の10人体制ギルド"
 
 agents:
-  architect:
-    definition: agents/architect.md
-    memory: memory/architect/
-    model: opus  # 設計判断は高品質モデル
-    description: "設計・技術選定の専門家"
+  why-architect:
+    definition: agents/why-architect.md
+    description: "🏗️ 軍師 — WhyをWhyを深掘りし目的を確定"
 
-  coder:
-    definition: agents/coder.md
-    memory: memory/coder/
-    model: sonnet  # 実装はコスパ重視
-    description: "実装・コーディングの専門家"
+  what-finder:
+    definition: agents/what-finder.md
+    description: "🔮 斥候 — ターゲットと影響範囲を特定"
 
-  reviewer:
-    definition: agents/reviewer.md
-    memory: memory/reviewer/
-    model: opus  # レビューは品質重視
-    description: "コード品質・セキュリティの専門家"
+  solver:
+    definition: agents/solver.md
+    description: "⚗️ 錬金術師 — 複数の解決策を導出・分析"
 
-  researcher:
-    definition: agents/researcher.md
-    memory: memory/researcher/
-    model: sonnet  # 調査は速度重視
-    description: "技術調査・分析の専門家"
+  work-planner:
+    definition: agents/work-planner.md
+    description: "📜 書記官 — 作業計画を構造化"
+
+  task-executor:
+    definition: agents/task-executor.md
+    description: "⚔️ 剣士 — タスク実行・実装"
+
+  code-reviewer:
+    definition: agents/code-reviewer.md
+    description: "🛡️ 守護者 — 品質検証"
+
+  quality-fixer:
+    definition: agents/quality-fixer.md
+    description: "🔧 鍛冶師 — 品質問題の修正"
+
+  pr-creator:
+    definition: agents/pr-creator.md
+    description: "📮 伝令兵 — PR作成"
+
+  notion-writer:
+    definition: agents/notion-writer.md
+    description: "📖 記録官 — Notion記録"
+
+  pattern-learner:
+    definition: agents/pattern-learner.md
+    description: "🧠 賢者 — パターン学習・蓄積"
 
 # Workflow templates
 workflows:
   feature:
     description: "新機能追加"
     steps:
-      - agent: architect
-        action: "設計判断"
-      - agent: coder
-        action: "実装"
-      - agent: reviewer
-        action: "レビュー"
-      - agent: coder
-        action: "修正（必要な場合）"
+      - agent: why-architect
+        action: "Whyの深掘り・目的確定"
+      - agent: what-finder
+        action: "ターゲット・影響範囲特定"
+      - agent: solver
+        action: "解決策導出・トレードオフ分析"
+      - agent: work-planner
+        action: "作業計画構造化"
+      - agent: task-executor
+        action: "実装（TDDフロー）"
+      - agent: code-reviewer
+        action: "品質検証"
+      - agent: quality-fixer
+        action: "品質問題修正"
         condition: "review_result == REQUEST_CHANGES"
+      - agent: pr-creator
+        action: "PR作成"
+      - agent: notion-writer
+        action: "Notion記録"
+      - agent: pattern-learner
+        action: "フロー記録"
 
   bugfix:
     description: "バグ修正"
     steps:
-      - agent: researcher
-        action: "原因調査"
-      - agent: coder
+      - agent: why-architect
+        action: "問題のWhy確認"
+      - agent: what-finder
+        action: "原因調査・影響範囲特定"
+      - agent: solver
+        action: "修正アプローチ検討"
+      - agent: task-executor
         action: "修正実装"
-      - agent: reviewer
+      - agent: code-reviewer
         action: "修正レビュー"
+      - agent: pr-creator
+        action: "PR作成"
 
   research:
     description: "技術調査"
     steps:
-      - agent: researcher
-        action: "調査・分析"
+      - agent: what-finder
+        action: "情報収集・影響範囲特定"
 
   refactor:
     description: "リファクタリング"
     steps:
-      - agent: architect
-        action: "リファクタ方針策定"
-      - agent: coder
+      - agent: why-architect
+        action: "リファクタ目的確定"
+      - agent: solver
+        action: "アプローチ検討"
+      - agent: work-planner
+        action: "作業計画"
+      - agent: task-executor
         action: "リファクタ実施"
-      - agent: reviewer
+      - agent: code-reviewer
         action: "レビュー"

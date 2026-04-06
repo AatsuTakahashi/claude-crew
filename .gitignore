@@ -13,3 +13,4 @@ logs/
 # Secrets
 .env
 .env.local
+knowledge.db

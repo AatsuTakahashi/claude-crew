@@ -61,7 +61,7 @@ show_guild_gate() {
 GREETINGS=(
   "ようこそ、冒険者ギルド『Claude Crew』へ。今日はどんな依頼をこなす？"
   "おお、ギルドマスター殿。精鋭たちは既に待機している。指示を。"
-  "ギルドの扉が開かれた。四人の冒険者、出撃準備完了。"
+  "ギルドの扉が開かれた。10人の冒険者、出撃準備完了。"
   "今日の依頼書は厚いな...だが心配無用。我がギルドの精鋭に不可能はない。"
   "バグドラゴンの討伐依頼が入っているぞ。腕の見せ所だ。"
   "新たな冒険の幕開けだ。さあ、依頼を受け付けよう。"
@@ -128,10 +128,16 @@ show_banner() {
 show_guild_members() {
   echo -e "  ${YELLOW}⚜️  【 ギルドメンバー 】${RESET}"
   echo ""
-  slow_echo "    🏗️  ${BOLD}Architect${RESET}  ${DIM}— 軍師。依頼の作戦を練る知恵者。${RESET}"
-  slow_echo "    ⚔️  ${BOLD}Coder${RESET}      ${DIM}— 剣士。コードで敵を斬り伏せる主力。${RESET}"
-  slow_echo "    🛡️  ${BOLD}Reviewer${RESET}   ${DIM}— 守護者。品質の盾でバグを通さぬ番人。${RESET}"
-  slow_echo "    🔮 ${BOLD}Researcher${RESET} ${DIM}— 斥候。未知の領域を探り、道を示す魔導士。${RESET}"
+  slow_echo "    🏗️  ${BOLD}Why-Architect${RESET}   ${DIM}— 軍師。依頼のWhyを深掘りする門番。${RESET}"
+  slow_echo "    🔮 ${BOLD}What-Finder${RESET}     ${DIM}— 斥候。ターゲットと影響範囲を特定する。${RESET}"
+  slow_echo "    ⚗️  ${BOLD}Solver${RESET}          ${DIM}— 錬金術師。複数の解を導き出す知恵者。${RESET}"
+  slow_echo "    📜 ${BOLD}Work-Planner${RESET}    ${DIM}— 書記官。作戦を実行可能な計画に落とす。${RESET}"
+  slow_echo "    ⚔️  ${BOLD}Task-Executor${RESET}   ${DIM}— 剣士。コードで道を切り拓く主力。${RESET}"
+  slow_echo "    🛡️  ${BOLD}Code-Reviewer${RESET}   ${DIM}— 守護者。品質の盾でバグを通さぬ番人。${RESET}"
+  slow_echo "    🔧 ${BOLD}Quality-Fixer${RESET}   ${DIM}— 鍛冶師。折れた剣を打ち直す職人。${RESET}"
+  slow_echo "    📮 ${BOLD}PR-Creator${RESET}      ${DIM}— 伝令兵。成果を世に届ける使者。${RESET}"
+  slow_echo "    📖 ${BOLD}Notion-Writer${RESET}   ${DIM}— 記録官。冒険の記録をNotionに刻む。${RESET}"
+  slow_echo "    🧠 ${BOLD}Pattern-Learner${RESET} ${DIM}— 賢者。経験からパターンを学ぶ知者。${RESET}"
   echo ""
 }
 
@@ -268,6 +274,12 @@ case "$ACTION" in
     else
       log_quest "ギルド本部: ${BOLD}$CREW_DIR${RESET}"
       LAUNCH_DIR="$CREW_DIR"
+    fi
+
+    # knowledge.db初期化（未作成の場合）
+    if [[ ! -f "$LAUNCH_DIR/knowledge.db" ]] && [[ -f "$CREW_DIR/db/init.sh" ]]; then
+      log_info "knowledge.db を初期化中..."
+      bash "$CREW_DIR/db/init.sh"
     fi
 
     # 出撃ログ記録
