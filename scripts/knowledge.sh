@@ -99,6 +99,39 @@ cmd_list() {
         "SELECT id, content, category, domain, project, agent, tags FROM memories WHERE $where ORDER BY updated_at DESC;"
 }
 
+cmd_update() {
+    local id="${1:?Usage: knowledge.sh update <id> <content>}"
+    local content="${2:?Usage: knowledge.sh update <id> <content>}"
+    shift 2
+    parse_opts "$@"
+
+    ensure_db
+
+    local now
+    now=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+    local escaped_content
+    escaped_content=$(escape_sql "$content")
+
+    local set_clause="content = '$escaped_content', updated_at = '$now'"
+    [[ -n "$OPTS_category" ]] && set_clause="$set_clause, category = '$(escape_sql "$OPTS_category")'"
+    [[ -n "$OPTS_domain" ]]   && set_clause="$set_clause, domain = '$(escape_sql "$OPTS_domain")'"
+    [[ -n "$OPTS_project" ]]  && set_clause="$set_clause, project = '$(escape_sql "$OPTS_project")'"
+    [[ -n "$OPTS_agent" ]]    && set_clause="$set_clause, agent = '$(escape_sql "$OPTS_agent")'"
+    [[ -n "$OPTS_tags" ]]     && set_clause="$set_clause, tags = '$(escape_sql "$OPTS_tags")'"
+
+    sqlite3 "$DB_PATH" "UPDATE memories SET $set_clause WHERE id = $id;"
+    echo "Updated memory #$id" >&2
+}
+
+cmd_delete() {
+    local id="${1:?Usage: knowledge.sh delete <id>}"
+
+    ensure_db
+
+    sqlite3 "$DB_PATH" "UPDATE memories SET is_active = 0 WHERE id = $id;"
+    echo "Deactivated memory #$id" >&2
+}
+
 cmd_migrate() {
     ensure_db
     echo "Database is up to date."
@@ -108,6 +141,8 @@ case "${1:-help}" in
     add)      shift; cmd_add "$@" ;;
     search)   shift; cmd_search "$@" ;;
     list)     shift; cmd_list "$@" ;;
+    update)   shift; cmd_update "$@" ;;
+    delete)   shift; cmd_delete "$@" ;;
     migrate)  shift; cmd_migrate "$@" ;;
     *)
         cat <<'USAGE'
@@ -117,6 +152,8 @@ Commands:
   add <content> <category> [options]   記憶を追加
   search [options]                     構造化フィルタで検索
   list [options]                       一覧表示
+  update <id> <content> [options]      記憶を更新
+  delete <id>                          記憶を無効化（論理削除）
   migrate                              DBマイグレーション適用
 
 Options (add):
