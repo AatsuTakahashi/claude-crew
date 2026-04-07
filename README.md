@@ -127,16 +127,16 @@ bash db/init.sh
 
 ```bash
 # ギルド本部（このリポジトリ）で起動
-./scripts/summon.sh
+./summon
 
 # 特定のプロジェクトに出撃
-./scripts/summon.sh /path/to/your-project
+./summon /path/to/your-project
 
 # ギルド掲示板（ステータスログ）をリアルタイム監視
-./scripts/summon.sh --watch
+./summon --watch
 
 # 直近の戦況を確認
-./scripts/summon.sh --status
+./summon --status
 ```
 
 ### 他のプロジェクトで使う
@@ -145,10 +145,10 @@ Claude Crewは任意のプロジェクトで使用できます。セットアッ
 
 ```bash
 # プロジェクトにギルド拠点を設営
-./scripts/summon.sh --setup /path/to/your-project
+./summon --setup /path/to/your-project
 
 # そのプロジェクトで起動
-./scripts/summon.sh /path/to/your-project
+./summon /path/to/your-project
 ```
 
 ---
